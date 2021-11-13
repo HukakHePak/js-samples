@@ -8,29 +8,31 @@ function addTask(task, priority = 'Low')
 
 function  findItem(task)
 {
-    return list.find(function(item) { return item.name == task; });
+    return list.findIndex(function(item) { return item.name == task; });
 }
 
-let changeStatus = (task, stat) => {
+function changeStatus(task, stat) {
     let i = findItem(task);
     if(i >= 0) {
         list[i].status = stat;
     }
 }
 
-let changePriority = (task, priority) => {
+function  changePriority(task, priority) {
     let i = findItem(task);
     if(i >= 0) {
         list[i].priority = priority;
     }
 }
 
-let delTask = (task) => {
+function  delTask(task) {
     let i = findItem(task);
-    list.slice(i, 1);
+    if(i >= 0) {
+        list.splice(i, 1);
+    }
 }
 
-let showStatList = (stat) => {
+function  showStatList(stat) {
 
     console.log("   " + stat + ":")
 
@@ -39,7 +41,7 @@ let showStatList = (stat) => {
     for(let i of list)
     {
         if (i.status === stat) {
-            console.log("      " + task + "   :   " + i.priority + " priority");
+            console.log("      " + i.name + "   :   " + i.priority + " priority");
             empty = false;
         }
     }
@@ -50,7 +52,7 @@ let showStatList = (stat) => {
     console.log("");
 }
 
-let showList = () => {
+function showList() {
     console.log("\n -------- MY LIST ---------");
     showStatList('To Do');
     showStatList('In Progress');
@@ -65,5 +67,5 @@ showList();
 changeStatus("My first task", 'In Progress');
 changeStatus("My third task", 'Done');
 showList();
-delTask("My second task");
+delTask("My sec");
 showList();
