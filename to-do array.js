@@ -32,40 +32,66 @@ function  delTask(task) {
     }
 }
 
-function  showStatList(stat) {
+// функция проверяет весь лист объектов, и выводит значения first и second полей объекта,
+// поле selector которых содержит значение selected
+// формат вывода:
+//  selected:
+//      first   :   second
+//      first   :   second  
 
-    console.log("   " + stat + ":")
+function specialShow(selector, selected, first, second) {  
+    console.log("   " + selected + ":")
 
     let empty = true;
-    
     for(let i of list)
     {
-        if (i.status === stat) {
-            console.log("      " + i.name + "   :   " + i.priority + " priority");
+        if (i[selector] === selected) {
+            console.log("      " + i[first] + "   :   " + i[second] + " " + second);
             empty = false;
         }
     }
-
     if(empty)       // если список пуст выведем черточку
         console.log("      -");
     
     console.log("");
 }
 
-function showList() {
+function showBy(selector) {
     console.log("\n -------- MY LIST ---------");
-    showStatList('To Do');
-    showStatList('In Progress');
-    showStatList('Done'); 
+    switch(selector) {
+        case 'status':
+            specialShow(selector, 'To Do', 'name', 'priority');
+            specialShow(selector, 'In Progress', 'name', 'priority');
+            specialShow(selector, 'Done', 'name', 'priority');
+            break;
+
+        case 'priority':
+            specialShow(selector, 'High', 'name', 'status');
+            specialShow(selector, 'Low', 'name', 'status');
+            break;
+        default:
+        console.log('\n\tUnknown filter \n');
+    }        
 }
 
+function showList() {
+    showBy('status');
+}
+ 
 showList();
-addTask("My first task", 'Hight');
+addTask("My first task", 'High');
 addTask("My second task");
 addTask("My third task", 'Low');
+addTask("Me fourth task", "High");
 showList();
 changeStatus("My first task", 'In Progress');
 changeStatus("My third task", 'Done');
+changePriority("Me fourth task", "Low");
+changePriority("My second task", "High");
 showList();
 delTask("My sec");
+delTask("Me fourth task");
 showList();
+showBy('status');
+showBy('priority');
+showBy('Sas');
