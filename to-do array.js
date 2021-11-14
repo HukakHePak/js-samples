@@ -1,54 +1,55 @@
 
 const list = [];
 
-function addTask(task, priority = 'Low') 
-{
-    list.push({'name': task, 'status': "To Do", 'priority': priority});
+const statuses = ['To Do', 'In Progress', 'Done'];
+const priorities = ['Low', 'High'];
+
+function addTask(name, priority = 'Low') {
+    list.push({name, 'status': "To Do", priority});
 }
 
-function  findItem(task)
-{
-    return list.findIndex(function(item) { return item.name == task; });
+function  findTaskIndex(name) {
+    return list.findIndex(function(item) { return item.name == name; });
 }
 
-function changeStatus(task, stat) {
-    let i = findItem(task);
+function changeStatus(name, status) {
+    let i = findTaskIndex(name);
     if(i >= 0) {
-        list[i].status = stat;
+        list[i].status = status;
     }
 }
 
-function  changePriority(task, priority) {
-    let i = findItem(task);
+function  changePriority(name, priority) {
+    let i = findTaskIndex(name);
     if(i >= 0) {
         list[i].priority = priority;
     }
 }
 
-function  delTask(task) {
-    let i = findItem(task);
+function  deleteTask(name) {
+    let i = findTaskIndex(name);
     if(i >= 0) {
         list.splice(i, 1);
     }
 }
 
-// функция проверяет весь лист объектов, и выводит значения first и second полей объекта,
-// поле selector которых содержит значение selected
-// формат вывода:
-//  selected:
-//      first   :   second
-//      first   :   second  
+function showSelectsList(property, selector, mainColumn = 'name') {  
+    console.log("   " + property + ":")     // выводим шапку
 
-function specialShow(selector, selected, first, second) {  
-    console.log("   " + selected + ":")
-
-    let empty = true;
+    let empty = true;       // флажок пустого списка
     for(let i of list)
     {
-        if (i[selector] === selected) {
-            console.log("      " + i[first] + "   :   " + i[second] + " " + second);
-            empty = false;
+        if (i[selector] !== property) continue; 
+
+        let result = "      " + i[mainColumn];  // записываем основной параметр в начало строки
+        for(let p in i)     // пробегаем по параметрам
+        {
+            if(p === selector || p === mainColumn)  // эти параметры нам не нужны
+                continue;
+            result += "   :   " + i[p] + " " + p;   // собираем строку из тех, что остались
         }
+        console.log(result); 
+        empty = false;  
     }
     if(empty)       // если список пуст выведем черточку
         console.log("      -");
@@ -60,14 +61,12 @@ function showBy(selector) {
     console.log("\n -------- MY LIST ---------");
     switch(selector) {
         case 'status':
-            specialShow(selector, 'To Do', 'name', 'priority');
-            specialShow(selector, 'In Progress', 'name', 'priority');
-            specialShow(selector, 'Done', 'name', 'priority');
+            for(let i of statuses)
+                showSelectsList(i, selector);
             break;
-
         case 'priority':
-            specialShow(selector, 'High', 'name', 'status');
-            specialShow(selector, 'Low', 'name', 'status');
+            for(let i of priorities)
+                showSelectsList(i, selector);
             break;
         default:
         console.log('\n\tUnknown filter \n');
@@ -89,8 +88,8 @@ changeStatus("My third task", 'Done');
 changePriority("Me fourth task", "Low");
 changePriority("My second task", "High");
 showList();
-delTask("My sec");
-delTask("Me fourth task");
+deleteTask("My sec");
+deleteTask("Me fourth task");
 showList();
 showBy('status');
 showBy('priority');
