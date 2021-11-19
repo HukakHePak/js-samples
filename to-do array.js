@@ -5,7 +5,7 @@ const statuses = ['To Do', 'In Progress', 'Done'];
 const priorities = ['Low', 'High'];
 
 function addTask(name, priority = 'Low') {
-    list.push({name, 'status': "To Do", priority});
+    list.push({name, status: "To Do", priority});
 }
 
 function  findTaskIndex(name) {
@@ -33,13 +33,13 @@ function  deleteTask(name) {
     }
 }
 
-function showSelectsList(property, selector, mainColumn = 'name') {  
-    console.log("   " + property + ":")     // выводим шапку
+function showSelectsList(selectedValue, selector, mainColumn = 'name') {  
+    console.log("   " + selectedValue + ":")     // выводим шапку
 
     let empty = true;       // флажок пустого списка
     for(let i of list)
     {
-        if (i[selector] !== property) continue; 
+        if (i[selector] !== selectedValue) continue; 
 
         let result = "      " + i[mainColumn];  // записываем основной параметр в начало строки
         for(let p in i)     // пробегаем по параметрам
@@ -61,12 +61,12 @@ function showBy(selector) {
     console.log("\n -------- MY LIST ---------");
     switch(selector) {
         case 'status':
-            for(let i of statuses)
-                showSelectsList(i, selector);
+            for(let stat of statuses)
+                showSelectsList(stat, 'status');
             break;
         case 'priority':
-            for(let i of priorities)
-                showSelectsList(i, selector);
+            for(let prior of priorities)
+                showSelectsList(prior, 'priority');
             break;
         default:
         console.log('\n\tUnknown filter \n');
