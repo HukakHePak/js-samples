@@ -39,7 +39,6 @@ export class ParamEditor extends React.Component<Props, Model> {
     }
 
     changeHandler(e: ChangeEvent<HTMLInputElement>): void {
-        console.log(this)
         const params = [...this.state.paramValues];
         params[0].value = e.target.value;
 
