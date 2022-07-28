@@ -2,9 +2,77 @@ class Calculator {
     constructor() {
         this.variables = new Map();
         this.functions = new Map();
-        this.reserved = ['var', 'let', 'fn', 'print', 'printvars', 'printfns'];
-        //this.signs = [...'+-=/*'];
+    }
 
+    create(name, operands, operation) {
+        if(this.isExist(name)) {
+            throw new CalcException('Exists variable or function');
+        }
+
+        if(operands) {
+            this.functions.set(name, {operands, operation});
+            return;
+        }
+
+        this.variables.set(name, NaN);
+    }
+
+    set(name, value) {
+        if(this.isFunc(value)){
+            throw CalcException('Variable cant links to function');
+        }
+
+        if (!this.variables.has(name)) {
+            this.create(name);
+        }
+
+        try {
+            this.variables.set(name, Number(this.get(value)));
+        } catch {
+            this.variables.set(name, Number(value));
+        }
+    }
+
+    isExist(name) {
+       return this.variables.has(name) || this.functions.has(name);
+    }
+
+    get(name) {
+        if (this.variables.has(name)) {
+            return this.variables.get(name);
+        }
+
+        throw new CalcException('Not exists variable');
+    }
+
+    isFunc(name) {
+        return this.functions.has(name);
+    }
+
+    execute(name) {
+        if (!this.functions.has(name)) {
+            throw new CalcException('Not exists function');
+        }
+
+        const {operands, operation} = this.functions.get(name);
+
+        const ops = operands.map(item => this.isFunc(item) ? this.execute(item) : this.get(item));
+
+        return operation ? operation(ops[0], ops[1]) : ops[0];
+    }
+}
+
+class CalcException extends Error {
+    constructor(message) {
+        super(message);
+        this.name = 'CalcException';
+    }
+}
+
+class Program {
+    constructor() {
+        this.calculator = new Calculator();
+        this.reserved = ['var', 'let', 'fn', 'print', 'printvars', 'printfns'];
         this.operations = {
             '+': (val1, val2) => val1 + val2,
             '-': (val1, val2) => val1 - val2,
@@ -13,134 +81,73 @@ class Calculator {
         }
     }
 
-    create(name) {
-        if(this.reserved.contains(name)) {
-            return false;
+    print(name) {
+        try {
+            const c = this.calculator;
+            console.log(name + ': ' + (c.isFunc(name) ? c.execute(name) : c.get(name)).toFixed(2));
+        } catch (e) {
+            console.log(e);
         }
-
-        if(this.variables.has(name)) {
-            return false;
-        }
-
-        this.set(name, NaN);
-        return true;
     }
 
-    assign(name, value) {
-        const val = this.get(value);
-
-        if(this.isFunc(val)) {
-            return false;
-        }
-
-        if(val) {
-            this.set(name, val);
-        } else {
-            this.create(name);
-            this.set(name, value);
-        }
-        return true;
-    }
-
-    get(name) {
-        const value = this.variables.get(name);
-
-        if(value) {
-            return value;
-        }
-
-        return false;
-    }
-
-    set(name, value) {
-        this.variables.set(name, value);
-    }
-
-    isFunc(name) {
-        return this.functions.has(name);
-    }
-
-    calculate(name, value) {
-        const func = this.functions.get(value);
-
-        if(func) {
-            const [val1, val2] = func.values;
-            const result = func.operator ?
-                this.operations[func.operator](this.get(val1), this.get(val2)) :
-                this.get(val1);
-
-            this.variables.set(name, result);
-        }
-
-        const keys = Array.from(this.signs.keys());
-        const operator = value.split('').find(letter => keys.contains(letter));
-
-        this.create(name);
-
-        this.functions.set(name, {
-            operator,
-            values: value.split(operator),
-        });
-    }
-}
-
-class CalcException {
-
-
-
-}
-
-class Program {
-    constructor() {
-        this.calculator = new Calculator();
-    }
-
-
-    print(id) {
-        console.log(this.calculator.get(id));
-    }
-
-    printVars() {
-        console.log(Array.from(this.calculator.variables.entries()).filter(([key]) => this.calculator.isFunc(key)));
-    }
-
-    printFns() {
-        console.log(this.calculator.functions.entries());
+    printMap(map) {
+        [...map.keys()].sort().forEach(this.print.bind(this));
     }
 
     parse(string) {
         const [reserved, expression] = string.split(' ');
 
-        const [name, value] = expression.split('=');
+        const [name, value] = (expression || '').split('=');
 
-        let funcValue;
-        let operator;
+        if (this.reserved.includes(name)) {
+            throw new CalcException('Reserved variable');
+        }
+
+        const c = this.calculator;
 
         switch (reserved) {
             case 'var':
-                this.calculator.create(expression);
+                c.create(expression);
                 break;
 
             case 'let':
-                this.calculator.assign(name, value);
+                c.set(name, value);
                 break;
 
             case 'fn':
-                this.calculator.calculate(name, value)
+                const operator = value.split('').find(letter => this.operations.hasOwnProperty(letter));
+
+                c.create(name, value.split(operator), this.operations[operator]);
                 break;
 
             case 'print':
-                this.print(expression);
+                this.print(name);
                 break;
 
             case 'printvars':
-                this.printVars();
+                this.printMap(c.variables);
                 break;
 
             case 'printfns':
-                this.printFns();
+                this.printMap(c.functions);
+                break;
+
+            default:
                 break;
         }
     }
 }
 
+const program = new Program();
+const stdin = process.openStdin();
+
+stdin.addListener("data", function (d) {
+    const command = d.toString().trim();
+
+    if (command == 'exit') {
+        process.exit(0);
+        return;
+    }
+
+    program.parse(command);
+});
